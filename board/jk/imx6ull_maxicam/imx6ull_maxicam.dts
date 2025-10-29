@@ -1,12 +1,12 @@
 /dts-v1/;
 
 #include "nxp/imx/imx6ull.dtsi"
-// #include "nxp/imx/imx6ul-14x14-evk.dtsi"
+/* #include "nxp/imx/imx6ul-14x14-evk.dtsi" */
 
 #include <dt-bindings/media/video-interfaces.h>
 
 / {
-	model = "Freescale i.MX6 ULL MaxiCam";
+	model = "JK Freescale i.MX6 ULL MaxiCam";
 	compatible = "jk,imx6ull-maxicam", "fsl,imx6ull-14x14-evk", "fsl,imx6ull";
 
 	chosen {
@@ -29,14 +29,6 @@
 			size = <0xa000000>;
 			linux,cma-default;
 		};
-	};
-
-	backlight-display {
-		compatible = "pwm-backlight";
-		pwms = <&pwm1 0 5000000 0>;
-		brightness-levels = <0 4 8 16 32 64 128 255>;
-		default-brightness-level = <6>;
-		status = "okay";
 	};
 
 	pxp_v4l2 {
@@ -76,6 +68,7 @@
 		regulator-always-on;
 	};
 
+    /*
 	reg_can_3v3: regulator-can-3v3 {
 		compatible = "regulator-fixed";
 		regulator-name = "can-3v3";
@@ -83,6 +76,7 @@
 		regulator-max-microvolt = <3300000>;
 		gpios = <&gpio_spi 3 GPIO_ACTIVE_LOW>;
 	};
+    */
 
     gpio-keys {
 		compatible = "gpio-keys";
@@ -91,7 +85,7 @@
 
 		button-mode {
 			label = "ACTION";
-			gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
 			linux,code = <KEY_PROG1>;
 			wakeup-source;
 		};
@@ -142,10 +136,14 @@
 
 &fec1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_enet1>;
+	pinctrl-0 = <&pinctrl_enet1 &pinctrl_enet1_reset>;
 	phy-mode = "rmii";
 	phy-handle = <&ethphy0>;
 	phy-supply = <&reg_peri_3v3>;
+
+    /* Added reset GPIO: GPIO1_IO00, active low */
+	reset-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
+
 	status = "okay";
 
     mdio {
@@ -173,17 +171,6 @@
 &can2 {
 	status = "disabled";
 };
-
-/*
-&gpio_spi {
-	eth0-phy-hog {
-		gpio-hog;
-		gpios = <1 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "eth0-phy";
-	};
-};
-*/
 
 &i2c1 {
 	clock-frequency = <100000>;
@@ -220,9 +207,8 @@
 	status = "disabled";
 };
 
-// ?
 &pxp {
-	status = "disabled";
+	status = "okay";
 };
 
 &qspi {
@@ -245,7 +231,6 @@
 	status = "disabled";
 };
 
-// ?
 &tsc {
 	status = "disabled";
 };
@@ -263,9 +248,10 @@
 };
 
 &usbotg1 {
-	dr_mode = "otg";
+	/* dr_mode = "otg"; */
+    dr_mode = "peripheral"; /* Always device */
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usb_otg1>;
+	/* pinctrl-0 = <&pinctrl_usb_otg1>; */
 	status = "okay";
 };
 
@@ -448,6 +434,7 @@
 		>;
 	};
 
+    /* TODO: check */
 	pinctrl_peri_3v3: peri3v3grp {
 		fsl,pins = <
 			MX6UL_PAD_SNVS_TAMPER2__GPIO5_IO02	0x1b0b0
@@ -608,19 +595,25 @@
 		>;
 	};
 
-    pinctrl_gpio_keys: ...grp {
+    pinctrl_enet1_reset: enet1resetgrp {
+        fsl,pins = <
+            MX6UL_PAD_GPIO1_IO00__GPIO1_IO00 0x1b0b0 /* No pull (output mode), normal drive */
+        >;
+    };
+
+    pinctrl_gpio_keys: gpiokeysgrp {
 		fsl,pins = <
-			MX6UL_PAD_GPIO1_IO03__GPIO1_IO03 0x...
+			MX6UL_PAD_GPIO1_IO03__GPIO1_IO03 0x1b010 /* Pull-down enabled, medium drive, hysteresis on. */
 		>;
 	};
 
-    pinctrl_gpio_leds: ...leds {
+    pinctrl_gpio_leds: gpioledsgrp {
         fsl,pins = <
-            MX6UL_PAD_GPIO1_IO04__GPIO1_IO04 0x...
-            MX6UL_PAD_GPIO1_IO05__GPIO1_IO05 0x...
-            MX6UL_PAD_GPIO1_IO08__GPIO1_IO08 0x...
-        >
-    }
+            MX6UL_PAD_GPIO1_IO04__GPIO1_IO04 0x1b0b0 /* No pull (output mode), normal drive */
+            MX6UL_PAD_GPIO1_IO05__GPIO1_IO05 0x1b0b0
+            MX6UL_PAD_GPIO1_IO08__GPIO1_IO08 0x1b0b0
+        >;
+    };
 };
 
 /delete-node/ &sim2;

@@ -1,0 +1,8 @@
+--- linux-custom.orig/arch/arm/boot/dts/Makefile	2025-03-01 15:54:50.000000000 +0300
++++ linux-custom/arch/arm/boot/dts/Makefile	2025-10-29 12:56:09.022151873 +0300
+@@ -39,3 +39,5 @@
+ subdir-y += vt8500
+ subdir-y += xen
+ subdir-y += xilinx
++dtb-$(CONFIG_SOC_IMX6ULL) += imx6ull_maxicam.dtb
++
