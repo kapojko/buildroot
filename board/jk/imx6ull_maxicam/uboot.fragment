@@ -1,0 +1,7 @@
+# Enable Device Tree control and FDT support
+CONFIG_OF_CONTROL=y
+CONFIG_OF_LIBFDT=y
+
+# Optional but recommended for debugging
+CONFIG_CMD_FDT=y
+CONFIG_FIT=y
